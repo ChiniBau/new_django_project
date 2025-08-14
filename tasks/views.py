@@ -1,17 +1,18 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from .models import BlogPost
 from django.core.serializers import serialize
 import json
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import get_object_or_404
 
 def home(request):
-    return render(request, 'tasks/post_list.html') 
+    return render(request, 'tasks/post_list.html')
 
-# Create your views here.
+
 def get_posts(request):
-    posts = BlogPost.objects.all().order_by('-published')
+    # retrieves all the BlogPost data from the admin site 
+    posts = BlogPost.objects.all().order_by('-published') 
+    # saves the data from the admin site in following format
     data = [
         {
             'id': post.id,
@@ -24,7 +25,7 @@ def get_posts(request):
 
 @csrf_exempt
 def update_or_delete_post(request, pk):
-    post=get_object_or_404(BlogPost, pk=pk)
+    post = get_object_or_404(BlogPost, pk=pk)
 
     if request.method == 'PUT':
         data = json.loads(request.body)
@@ -35,7 +36,6 @@ def update_or_delete_post(request, pk):
     
     elif request.method == 'DELETE':
         post.delete()
-        return JsonResponse({'message': 'Post deleted successfully'})         
-
-    return JsonResponse({'error': 'Method not allowed'}, status=405)      
-
+        return JsonResponse({'message': 'Post deleted successfully'})
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
